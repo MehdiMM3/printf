@@ -1,48 +1,72 @@
-#include "main.h"
+#include"main.h"
+#include <stdio.h>
+#include <stdarg.h>
 
 /**
- * _printf - print
- * @format: string
- * Return: nmbr
-*/
+ * _printf - Custom implementation of printf
+ * @format: The format string
+ *
+ * Return: The number of characters printed
+ *	(excluding the null byte used to end output to strings)
+ */
 int _printf(const char *format, ...)
 {
-	int sum = 0;
-	va_list ap;
-	char *p, *start;
-	params_t params = PARAMS_INIT;
+	va_list args;
 
-	va_start(ap, format);
+	va_start(args, format);
 
-	if (!format || (format[0] == '%' && !format[1]))
-		return (-1);
-	if (format[0] == '%' && format[1] == ' ' && !format[2])
-		return (-1);
-	for (p = (char *)format; *p; p++)
+	int chars_printed = 0;
+
+	char ch;
+
+	while ((ch = *format) != '\0')
 	{
-		init_params(&params, ap);
-		if (*p != '%')
+		if (ch != '%')
 		{
-			sum += _putchar(*p);
-			continue;
+			putchar(ch);
+			chars_printed++;
 		}
-		start = p;
-		p++;
-		while (get_flag(p, &params)) /* while char at pis flag char */
-		{
-			p++; /* next char */
-		}
-		p = get_width(p, &params, ap);
-		p = get_precision(p, &params, ap);
-		if (get_modifier(p, &params))
-			p++;
-		if(!get_specifier(p))
-			sum += print_from_to(start, p,
-					params.l_modifier || params.h_modifier ? p - 1 : 0);
 		else
-			sum += get_print_func(p, ap, &params);
+		{
+			format++;
+			ch = *format;
+
+			if (ch == '%')
+			{
+				putchar(ch);
+				chars_printed++;
+			}
+			else if (ch == 'c')
+			{
+				char c = va_arg(args, int);
+
+				putchar(c);
+				chars_printed++;
+			}
+			else if (ch == 's')
+			{
+				char *str = va_arg(args, char*);
+
+				while (*str)
+				{
+					putchar(*str);
+					chars_printed++;
+					str++;
+				}
+			}
+			else if (ch == 'd' || ch == 'i')
+			{
+				int num = va_arg(args, int);
+
+				printf("%d", num);
+				chars_printed++;
+			}
+		}
+
+		format++;
 	}
-	_putchar(BUF_FLUSH);
-	va_end(ap);
-	return (sum);
+
+	va_end(args);
+
+	return (chars_printed);
 }
